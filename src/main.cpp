@@ -5,6 +5,8 @@ extern "C"
 }
 #include <SDFat.h>
 #include "sdios.h"
+#include <iostream>
+#include <string>
 
 
 const uint8_t SD_CS_PIN = D8;
@@ -18,8 +20,6 @@ const uint8_t SD_CS_PIN = D8;
 #else  // HAS_SDIO_CLASS
 #define SD_CONFIG SdSpiConfig(SD_CS_PIN, SHARED_SPI, SPI_CLOCK)
 #endif  // HAS_SDIO_CLASS
-
-const char filename[] = "recording.wav";
 
 SdFat sd;
 
@@ -44,7 +44,7 @@ struct soundhdr {
     long  dlength;        /* data length in bytes (filelength - 44)  */
 };
 
-#define AUDIO_SIZE 2048 * 200
+#define AUDIO_SIZE 2048 * 80
 struct soundhdr wavh;
 
 void setup()
@@ -72,7 +72,14 @@ void setup()
   wavh.flength = AUDIO_SIZE + 44;
   wavh.dlength = AUDIO_SIZE;
 
-  txtFile.open(filename, FILE_WRITE);
+  randomSeed(analogRead(1));
+  int r = random(1000);
+  Serial.println(r);
+
+
+  std::string filename = "recording" + std::to_string(r) + ".wav";
+
+  txtFile.open(filename.c_str(), FILE_WRITE);
   txtFile.write((byte *) &wavh, 44);
   startMillis = millis();
 
@@ -108,7 +115,7 @@ void loop()
   }
   int endLoopMicroseconds = micros();
   int diffMicroseconds = endLoopMicroseconds - startLoopMicroseconds;
-  int delayMs = 125 - diffMicroseconds;
+  int delayMs = 120 - diffMicroseconds;
   if (delayMs > 0) {
     delayMicroseconds(delayMs);
   }
